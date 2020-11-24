@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.SceneManagement;
-using Cinemachine;
 using System;
 
 public class vacuumPush : MonoBehaviour
 {
-    public CinemachineVirtualCamera gameCamera;
+    [SerializeField] AudioSource vacuumOut;
 
     private CharacterController character;
 
@@ -16,11 +15,8 @@ public class vacuumPush : MonoBehaviour
 
     public float pushOut = 1.0f;
 
-    public Ghost ghost;
-
     public Rig vacuumRig;
 
-    private Vector3 axis;
     private Rigidbody rb;
 
     public ParticleSystem vacuumOutparticle;
@@ -36,6 +32,7 @@ public class vacuumPush : MonoBehaviour
         vacuumOutparticle = GetComponent<ParticleSystem>();
         collisionEvents = new List<ParticleCollisionEvent>();
         rb = GetComponent<Rigidbody>();
+        vacuumOut = GetComponent<AudioSource>();
     }
 
     void OnParticleCollision(GameObject other)
@@ -44,18 +41,22 @@ public class vacuumPush : MonoBehaviour
     }
     private void Update()
     {
+        //reset the level
         if (Input.GetKeyDown(KeyCode.R))
             SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().name);
 
+        //blowing air out to push objects forward
         if (Input.GetKeyDown(KeyCode.K))
         {
             vacuumOutparticle.Play();
+            vacuumOut.Play();
             rb.AddForce(transform.forward * pushOut);
         }
 
         if (Input.GetKeyUp(KeyCode.K))
         {
             vacuumOutparticle.Stop();
+            vacuumOut.Stop();
         }
     }
 }

@@ -2,40 +2,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
-using Cinemachine;
 
 public class vacuumPull : MonoBehaviour
 {
-    public CinemachineVirtualCamera gameCamera;
+    [SerializeField] AudioSource vacuumIn = null;
 
     private CharacterController character;
 
     public string GhostTag;
 
-    public Ghost ghost;
-
     public Rig vacuumRig;
 
-    private Vector3 axis;
     private Rigidbody rb;
 
     public ParticleSystem vacuumInparticle;
     public List<ParticleCollisionEvent> collisionEvents;
 
-    public Transform pullIN;
-
-    public float pullIn = -1.0f;
-
-    Vector3 pullForce;
-
-    public float positionDistanceThreshold;
-
-    public float velocityDistanceThreshold;
-
-    public float maxVelocity;
+    public float pullIn = 1.0f;
 
     Animator anim;
-    float amount;
 
     void Start()
     {
@@ -44,71 +29,33 @@ public class vacuumPull : MonoBehaviour
         vacuumInparticle = GetComponent<ParticleSystem>();
         collisionEvents = new List<ParticleCollisionEvent>();
         rb = GetComponent<Rigidbody>();
+        vacuumIn = GetComponent<AudioSource>();
     }
 
     void OnParticleCollision(GameObject other)
     {
         Debug.Log("collided " + gameObject.name);
+        Vector3 direction = gameObject.transform.position - transform.position;
+        rb.AddForce(transform.position.z * direction);
     }
 
-    private void Update()
+    public void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            Application.Quit();
+
+        //air pulls in objects
         if (Input.GetKeyDown(KeyCode.J))
         {
             vacuumInparticle.Play();
-            rb.AddForce(transform.forward * pullIn);
+            vacuumIn.Play();
+            //rb.AddForce(transform.position - transform.position);
         }
 
         if (Input.GetKeyUp(KeyCode.J))
         {
             vacuumInparticle.Stop();
+            vacuumIn.Stop();
         }
     }
-
-    /*
-    void Update()
-    {
-        RaycastHit hit;
-        
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            vacuumInparticle.Play();
-            if (Physics.Raycast(transform.position, transform.forward, out hit, Mathf.Infinity))
-            {
-                if (hit.transform.tag.Equals(GhostTag))
-                {
-                    StartCoroutine(PullObject(hit.transform));
-                }
-            }
-        }
-    }
-
-    IEnumerator PullObject(Transform t)
-    {
-        Rigidbody r = t.GetComponent<Rigidbody>();
-        while (true)
-        {
-            if (Input.GetKeyUp(KeyCode.J))
-            {
-                break;
-            }
-        }
-
-        float distanceToVacuum = Vector3.Distance(t.position, pullIN.position);
-
-        Vector3 pullDirection = pullIN.position - t.position;
-
-        pullForce = pullDirection.normalized * modifier;
-
-        if (r.velocity.magnitude < maxVelocity && distanceToVacuum > velocityDistanceThreshold)
-        {
-            r.AddForce(pullForce, ForceMode.Force);
-        } 
-        else
-        {
-            r.velocity = pullDirection.normalized * maxVelocity;
-        }
-
-        yield return null;
-    }*/
 }
